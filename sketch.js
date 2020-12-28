@@ -15,9 +15,9 @@ function preload()
   
   gardenImg=loadImage("virtualpetimages/Garden.png");
   bedroomImg=loadImage("virtualpetimages/Bed Room.png");
-  washroomImg=loadImage("virtualpetimages/Wash Room.png")
+  washroomImg=loadImage("virtualpetimages/Wash Room.png");
   
-  sadDogImg=loadImage("virtualpetimages/deadDog.png")
+  sadDogImg=loadImage("sadDog.jpeg");
 }
 
 function setup() {
@@ -28,7 +28,7 @@ function setup() {
   foodStock.on("value", readStock);
 
 
-  dog=createSprite(800, 200, 150, 150, 150);
+  dog=createSprite(700, 200, 150, 150);
   dog.addImage(sadDogImg);
   dog.scale=0.2;
 
@@ -47,7 +47,10 @@ function setup() {
       console.log(gameState);
     });
 
-
+    fedTime=database.ref('feedTime');
+    fedTime.on("value", function(data){
+      lastFed=data.val();
+    })
 
 }
 
@@ -55,7 +58,8 @@ function setup() {
 function draw() {  
 
 var currentTime=hour();
-if(currentTime===(lastFed+1)){
+//console.log(currentTime);
+if(currentTime===(lastFed+0.1)){
   updateState("playing");
   foodObj.garden();
 }else if(currentTime>(lastFed+2)&&currentTime<=(lastFed+4)){
@@ -75,7 +79,7 @@ foodObj.display();
 
  //text("Food Supply: "+ foodS, 50, 100);
 
-  if(gameState!=="hungry"){
+  if(gameState!="hungry"){
     feedButton.hide();
     restockButton.hide();
     dog.remove();
@@ -109,14 +113,14 @@ function readStock(data){
 }
 
 function feedDog(){
-  console.log(hour());
-  dog.addImage(happydogImage);
+  //console.log(hour());
+  dog.addImage(gardenImg);
 //console.log(foodObj.getFoodStock);
   foodObj.updateFoodStock(foodObj.getFoodStock()-1);
   database.ref('/').update({
     food:foodObj.getFoodStock(),
     feedTime: hour(),
-    gameState:"hungry"
+    gameState:"playing"
   })
 }
 
@@ -128,5 +132,7 @@ function addFood(){
 }
 
 function updateState(state){
-  gameState: state
+  database.ref('/').update({
+    gameState: state
+  })
 }
